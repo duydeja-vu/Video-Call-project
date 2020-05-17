@@ -32,8 +32,8 @@ class MainProcessing(object):
 
     # If client receive "200_OK", who will connect to server's sound socket and video socket and start video call.
     # Two method below handle that.
-    def ConnectionsSound(self):
-        pass
+    # def ConnectionsSound(self):
+    #     pass
 
     
     def ConnectionsVideo(self):
@@ -68,10 +68,10 @@ class MainProcessing(object):
         verify_client_account = Thread(target=self.VerifyClientAccount)
         verify_client_account.start()
 
-        server_audio.listen(2)
-        print("Waiting for connection..")
-        thread_audio = Thread(target=self.ConnectionsSound)
-        thread_audio.start()
+        # server_audio.listen(2)
+        # print("Waiting for connection..")
+        # thread_audio = Thread(target=self.ConnectionsSound)
+        # thread_audio.start()
 
         server_video.listen(2)
         print("Waiting for connection..")
