@@ -20,9 +20,6 @@ class MainProcessing(object):
         #self.queue_gui_socket = Queue()
         self.client_address = []
 
-    def StartGui(self):
-        pass
-
     # Accept connection to main socket.
     # Receive buffer that contain client's username and password
     # Call database and verify client account
@@ -32,6 +29,7 @@ class MainProcessing(object):
 
     # If client receive "200_OK", who will connect to server's sound socket and video socket and start video call.
     # Two method below handle that.
+
     # def ConnectionsSound(self):
     #     pass
 
@@ -75,21 +73,19 @@ class MainProcessing(object):
 
         server_video.listen(2)
         print("Waiting for connection..")
-        thread_video = Thread(target=self.ConnectionsVideo)
-        thread_video.start()
+        process_video = Thread(target=self.ConnectionsVideo)
+        process_video.start()
 
 
 main_processing = MainProcessing()
 
 def main():
 
-    process_gui = Process(target=main_processing.StartGui)
     process_socket = Process(target=main_processing.StartSocket)
 
-    process_gui.start()
     process_socket = process_socket.start()
 
-    while process_gui.is_alive() == True:
+    while process_socket.is_alive() == True:
         continue
     
     my_pid = os.getpid()
