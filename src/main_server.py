@@ -85,11 +85,9 @@ def main():
 
     process_gui = Process(target=main_processing.StartGui)
     process_socket = Process(target=main_processing.StartSocket)
-    # process_call_session = Process(target=main_processing.StartCallSession)
 
     process_gui.start()
     process_socket = process_socket.start()
-    # process_call_session = process_call_session.start()
 
     while process_gui.is_alive() == True:
         continue
