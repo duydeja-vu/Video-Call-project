@@ -1,8 +1,8 @@
 from tkinter import *
 from tkinter import messagebox
 
-class SignUp(Frame):
-    pass
+# class SignUp(Frame):
+#     pass
 
 class Application(Frame):
     def __init__(self,master):
@@ -125,24 +125,29 @@ class Application(Frame):
 
     def Login(self):
         data=[]
-        f=open("Repository.txt","r")
-        while True:
-            infor=f.readline()
-            if(infor==""):
-                messagebox.showwarning("Warring!","Account does not exist")
-                break
-            else:
-                data=infor.split()
-                self.name = data[2]
-                if(self.en_acc.get()==data[0] and self.en_pass.get()==data[1]):
-                    self.Interface_Call()
-                    break
-                elif(self.en_acc.get()!=data[0] or self.en_pass.get()!=data[1]):
-                    messagebox.showerror("Error!", "incorrect account or password")
-                    break
-        f.close()
+        data.append("Login")
+        data.append(self.en_acc.get())
+        data.append(self.en_pass.get())
+        print(data)
+        # f=open("database.txt","r")
+        # while True:
+        #     infor=f.readline()
+        #     if(infor==""):
+        #         messagebox.showwarning("Warring!","Account does not exist")
+        #         break
+        #     else:
+        #         data=infor.split()
+        #         self.name = data[2]
+        #         if(self.en_acc.get()==data[0] and self.en_pass.get()==data[1]):
+        #             self.Interface_Call()
+        #             break
+        #         elif(self.en_acc.get()!=data[0] or self.en_pass.get()!=data[1]):
+        #             messagebox.showerror("Error!", "incorrect account or password")
+        #             break
+        # f.close()
 
-if __name__=="__main__":
-    t=Tk()
-    app=Application(t)
-    app.mainloop()
+
+#if __name__=="__main__":
+t=Tk()
+app=Application(t)
+app.mainloop()
