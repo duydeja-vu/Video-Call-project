@@ -102,8 +102,9 @@ class MainProcessing(object):
         mess = client_socket.recv(config.BUFFSIZE)
         user_data = mess.decode('utf-8')
         user_data = eval(user_data)
-        user_validate = self.VerifyClientAccount(user_data)
-        print(user_validate)
+        server_response = self.VerifyClientAccount(user_data)
+        client_socket.send(server_response.encode('utf-8'))
+        
 
         
             # if mess.decode('utf-8') == "end":
