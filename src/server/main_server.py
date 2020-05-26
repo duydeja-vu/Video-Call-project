@@ -16,30 +16,35 @@ import pickle
 class MainProcessing(object):
     def __init__(self):
         #self.queue_gui_socket = Queue()
-        self.client_address = []
+        self.client_online = []
+        self.count_chat_room = 0
 
     
     def VerifyClientAccount(self, user_data):
+        # print("user data", user_data)
         user_status = user_data[0]
         user_name = user_data[1]
         user_pass = user_data[2]
         user_valid = False
         infor_save = user_name + " " + user_pass + " " + "\n"
+        temp_pass = ""
         server_response = ""
 
-        if user_status == "Register":
-            f = open("database.txt","r")
-            while True:
-                line = f.readline()
-                if line == "":
-                    user_valid = False
+        f = open("database.txt","r")
+        while True:
+            line = f.readline()
+            if line == "":
+                user_valid = False
+                break
+            else:
+                data = line.split()
+                if user_name == data[0]:
+                    user_valid = True
+                    temp_pass = data[1]
                     break
-                else:
-                    data = line.split()
-                    if user_name == data[0]:
-                        user_valid = True
-                        break
-            f.close()
+        f.close()
+
+        if user_status == "Register":
             if user_valid == False:
                 f = open("database.txt","a")
                 f.writelines(infor_save)
@@ -49,25 +54,13 @@ class MainProcessing(object):
                 server_response = "500_NOTOK"
         
         if user_status == "Login":
-            f = open("database.txt","r")
-            while True:
-                line = f.readline()
-                if line == "":
-                    user_valid = False
-                    break
-                else:
-                    data = line.split()
-                    if user_name == data[0]:
-                        user_valid = True
-                        break
-            f.close()
-            if user_valid == True:
+            if user_valid == True and temp_pass == user_pass:
                 server_response = "200_OK"
             else:
                 server_response = "500_NOTOK"
         return server_response
-        
 
+        
     def StartSocket(self):
         # Create new socket handling verify client account
         main_socket = socket(family=AF_INET, type=SOCK_STREAM)
@@ -94,35 +87,31 @@ class MainProcessing(object):
         except OSError:
             print("Can't bind audio port")
 
-        main_socket.listen(2)
+        main_socket.listen(10)
         print("Main Socket Waiting for connection..")
-        # verify_client_account = Thread(target=self.VerifyClientAccount)
-        # verify_client_account.start()
-        client_socket, client_addr = main_socket.accept()
-        mess = client_socket.recv(config.BUFFSIZE)
-        user_data = mess.decode('utf-8')
-        user_data = eval(user_data)
-        server_response = self.VerifyClientAccount(user_data)
-        client_socket.send(server_response.encode('utf-8'))
+
+        while True: 
+            client_socket, client_addr = main_socket.accept()
+            while True:
+                mess = client_socket.recv(config.BUFFSIZE)
+                user_data = mess.decode('utf-8')
+                user_data = eval(user_data)
+                print(user_data)
+                if len(user_data) != 0:
+                    server_response = self.VerifyClientAccount(user_data)
+                    client_socket.send(server_response.encode('utf-8'))
+                    if server_response == "200_OK":
+                        self.client_online.append(user_data[1])
+                        print(self.client_online)
+                        print("LOGIN SUCCESS !")
+                        break
+                    else:
+                        print("Login or Register ERR")
+                        continue
+                else:
+                    continue
         
 
-        
-            # if mess.decode('utf-8') == "end":
-            #     print("End call")
-            #     main_socket.close()
-            # else:
-            #     mess = input("Server: ")
-            #     client_socket.send(mess.encode('utf-8'))
-
-        # server_audio.listen(2)
-        # print("Waiting for connection..")
-        # thread_audio = Thread(target=self.ConnectionsSound)
-        # thread_audio.start()
-
-        # server_video.listen(2)
-        # print("Waiting for connection..")
-        # process_video = Thread(target=self.ConnectionsVideo)
-        # process_video.start()
 
 
 main_processing = MainProcessing()
