@@ -15,6 +15,9 @@ class Application(Frame):
         self.pack()
         self.Creat_widgets()
         self.queue_GUI_Socket = Queue()
+        self.main_socket = None
+        self.is_first_access = True
+        self.login_status = False
         
 
 
@@ -124,25 +127,30 @@ class Application(Frame):
         login_data.append(self.en_acc.get())
         login_data.append(self.en_pass.get())
         self.queue_GUI_Socket.put(login_data)
+        
+
         self.StartMainSocket()
        
 
     def StartMainSocket(self):
-        # get user data from GUI
+        if self.is_first_access == True:
+            self.main_socket = socket(AF_INET, SOCK_STREAM)
+            self.main_socket.connect((config.HOST, config.MAIN_PORT))
+            self.is_first_access = False
+        
         user_data = []
         if self.queue_GUI_Socket.qsize() != 0:
             user_data = self.queue_GUI_Socket.get()
-
-        main_socket = socket(AF_INET, SOCK_STREAM)
-        main_socket.connect((config.HOST, config.MAIN_PORT))
-        while True:
-            send_mess = str(user_data)
-            main_socket.send(send_mess.encode('utf-8'))
-            receive_mess = main_socket.recv(config.BUFFSIZE)
-            if receive_mess.decode('utf-8') == "200_OK":
-                print("start video call")
-            else:
-                print("ERROR")
+            print("user data", user_data)
+         
+        send_mess = str(user_data)
+        self.main_socket.send(send_mess.encode('utf-8'))
+        receive_mess = self.main_socket.recv(config.BUFFSIZE)
+        if receive_mess.decode('utf-8') == "200_OK":
+            login_status = True
+            print("Logined")
+        else:
+            print("ERR")
 
 
 if __name__=="__main__":
