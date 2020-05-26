@@ -8,8 +8,6 @@ from utils import config
 from socket import *
 import pickle
 
-# class SignUp(Frame):
-#     pass
 
 class Application(Frame):
     def __init__(self,master):
@@ -87,14 +85,6 @@ class Application(Frame):
         self.en1_conf.pack()
         self.en1_conf.place(x=77, y=100)
 
-        # self.lb1_phone = Label(self.top, text=": ")  # <p> confirm
-        # self.lb1_phone.pack()
-        # self.lb1_phone.place(x=10, y=126)
-
-        # self.en1_phone = Entry(self.top)  # Entry confirm
-        # self.en1_phone.pack()
-        # self.en1_phone.place(x=77, y=126)
-
         self.bt_login = Button(self.top, text="Submit", font=(13), height=2,command=self.Register)  # Button Submit
         self.bt_login.pack()
         self.bt_login.place(x=100, y=125)
@@ -104,8 +94,7 @@ class Application(Frame):
         self.lg=Toplevel(t)
         self.frame = self.lg.geometry("300x140+500+180")
         self.lg.resizable(width=False, height=False)
-        self.lb = Label(self.lg, text="CaVid-G4 App", font=("", 14)).pack()
-        self.lb = Label(self.lg, text="user: {}".format(self.name), font=("", 13)).pack()
+        Label(self.lg, text="CaVid-G4 App", font=("", 14)).pack()
 
         self.bt_logout = Button(self.lg, text="Logout", height=3, width=7, command=self.LogOut)
         self.bt_logout.pack()
@@ -115,30 +104,19 @@ class Application(Frame):
         self.bt_exit.pack()
         self.bt_exit.place(y=85)
 
-        self.bt_call = Button(self.lg, text="Call", height=3,width=7)  ############################################ Button Call
-        self.bt_call.pack()
-        self.bt_call.place(x=120,y=85)
-
-    def LogOut(self): # Process Logout
+    def LogOut(self): 
         t.deiconify() # show main window again
         self.lg.destroy()
 
-#-------------------------------Store and process data------------------------------------------------------------------
 
-    def Register(self): # Store data at a Repository.txt file
+    def Register(self): 
         register_data = []
         register_data.append("Register")
         register_data.append(self.en1_acc.get())
         register_data.append(self.en1_pass.get())
         self.queue_GUI_Socket.put(register_data)
         self.StartMainSocket()
-        #print(register_data)
-        # infor=self.en1_acc.get()+" " + self.en1_pass.get() + " " + "\n"
-        # f=open("Repository.txt","a")
-        # f.writelines(infor)
-        # f.close()
-        # messagebox.showinfo("Notification","Register Access!")
-        # self.top.destroy()
+       
 
     def Login(self):
         login_data=[]
@@ -147,24 +125,7 @@ class Application(Frame):
         login_data.append(self.en_pass.get())
         self.queue_GUI_Socket.put(login_data)
         self.StartMainSocket()
-        #print(login_data)
-        # print(data)
-        # f=open("database.txt","r")
-        # while True:
-        #     infor=f.readline()
-        #     if(infor==""):
-        #         messagebox.showwarning("Warring!","Account does not exist")
-        #         break
-        #     else:
-        #         data=infor.split()
-        #         self.name = data[2]
-        #         if(self.en_acc.get()==data[0] and self.en_pass.get()==data[1]):
-        #             self.Interface_Call()
-        #             break
-        #         elif(self.en_acc.get()!=data[0] or self.en_pass.get()!=data[1]):
-        #             messagebox.showerror("Error!", "incorrect account or password")
-        #             break
-        # f.close()
+       
 
     def StartMainSocket(self):
         # get user data from GUI
@@ -182,14 +143,6 @@ class Application(Frame):
                 print("start video call")
             else:
                 print("ERROR")
-
-
-        
-
-        
-
-        
-
 
 
 if __name__=="__main__":
