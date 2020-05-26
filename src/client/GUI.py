@@ -1,5 +1,12 @@
+import sys
+sys.path.append("..")
+
 from tkinter import *
 from tkinter import messagebox
+from multiprocessing import Process, Queue
+from utils import config
+from socket import *
+import pickle
 
 # class SignUp(Frame):
 #     pass
@@ -9,13 +16,16 @@ class Application(Frame):
         super().__init__(master)
         self.pack()
         self.Creat_widgets()
+        self.queue_GUI_Socket = Queue()
+        
+
 
     def Creat_widgets(self): # interface
-        self.tl=t.title("CaVid-G4 App") # title
+        self.tl=t.title("Video Conference") # title
         self.frame=t.geometry("300x140+500+180")
         t.resizable(width=False, height=False)
 
-        self.lb=Label(t,text="--Well com to CaVidG4--") # <h1> lable
+        self.lb=Label(t,text="--Well com to Video Conference--") # <h1> lable
         self.lb.pack()
 
         self.lb1 = Label(t,text="Sign in Account") # <h2> sublable
@@ -23,7 +33,7 @@ class Application(Frame):
 
         self.lb_acc=Label(t,text="account: ") # <p> account
         self.lb_acc.pack()
-        self.lb_acc.place(x=20,y=50)
+        self.lb_acc.place(x=10,y=50)
 
         self.en_acc=Entry(t) # Entry account
         self.en_acc.pack()
@@ -31,7 +41,7 @@ class Application(Frame):
 
         self.lb_pass=Label(t,text="password: ") # <p> password
         self.lb_pass.pack()
-        self.lb_pass.place(x=20,y=76)
+        self.lb_pass.place(x=10,y=76)
 
         self.en_pass = Entry(t,show="*")  # Entry password
         self.en_pass.pack()
@@ -52,9 +62,9 @@ class Application(Frame):
         self.top.resizable(width=False, height=False)
         self.lb2 = Label(self.top, text="--Register--", font=("", 14)).pack()
 
-        self.lb1_acc = Label(self.top, text="phone: ")  # <p> account
+        self.lb1_acc = Label(self.top, text="user name: ")  # <p> account
         self.lb1_acc.pack()
-        self.lb1_acc.place(x=20, y=50)
+        self.lb1_acc.place(x=10, y=50)
 
         self.en1_acc = Entry(self.top)  # Entry account
         self.en1_acc.pack()
@@ -63,7 +73,7 @@ class Application(Frame):
 
         self.lb1_pass = Label(self.top, text="password: ")  # <p> password
         self.lb1_pass.pack()
-        self.lb1_pass.place(x=20, y=76)
+        self.lb1_pass.place(x=10, y=76)
 
         self.en1_pass = Entry(self.top,show="*")  # Entry password
         self.en1_pass.pack()
@@ -71,23 +81,23 @@ class Application(Frame):
 
         self.lb1_conf = Label(self.top, text="confirm: ")  # <p> confirm
         self.lb1_conf.pack()
-        self.lb1_conf.place(x=20, y=100)
+        self.lb1_conf.place(x=10, y=100)
 
         self.en1_conf = Entry(self.top,show="*")  # Entry confirm
         self.en1_conf.pack()
         self.en1_conf.place(x=77, y=100)
 
-        self.lb1_phone = Label(self.top, text="name: ")  # <p> confirm
-        self.lb1_phone.pack()
-        self.lb1_phone.place(x=20, y=126)
+        # self.lb1_phone = Label(self.top, text=": ")  # <p> confirm
+        # self.lb1_phone.pack()
+        # self.lb1_phone.place(x=10, y=126)
 
-        self.en1_phone = Entry(self.top)  # Entry confirm
-        self.en1_phone.pack()
-        self.en1_phone.place(x=77, y=126)
+        # self.en1_phone = Entry(self.top)  # Entry confirm
+        # self.en1_phone.pack()
+        # self.en1_phone.place(x=77, y=126)
 
-        self.bt_login = Button(self.top, text="Submit", font=(13), height=2,command=self.Storage)  # Button Submit
+        self.bt_login = Button(self.top, text="Submit", font=(13), height=2,command=self.Register)  # Button Submit
         self.bt_login.pack()
-        self.bt_login.place(x=220, y=70)
+        self.bt_login.place(x=100, y=125)
 
     def Interface_Call(self): # Process Login
         t.withdraw() # hidden main window
@@ -115,20 +125,30 @@ class Application(Frame):
 
 #-------------------------------Store and process data------------------------------------------------------------------
 
-    def Storage(self): # Store data at a Repository.txt file
-        infor=self.en1_acc.get()+" " + self.en1_pass.get() + " " + self.en1_phone.get()+"\n"
-        f=open("Repository.txt","a")
-        f.writelines(infor)
-        f.close()
-        messagebox.showinfo("Notification","Register Access!")
-        self.top.destroy()
+    def Register(self): # Store data at a Repository.txt file
+        register_data = []
+        register_data.append("Register")
+        register_data.append(self.en1_acc.get())
+        register_data.append(self.en1_pass.get())
+        self.queue_GUI_Socket.put(register_data)
+        self.StartMainSocket()
+        #print(register_data)
+        # infor=self.en1_acc.get()+" " + self.en1_pass.get() + " " + "\n"
+        # f=open("Repository.txt","a")
+        # f.writelines(infor)
+        # f.close()
+        # messagebox.showinfo("Notification","Register Access!")
+        # self.top.destroy()
 
     def Login(self):
-        data=[]
-        data.append("Login")
-        data.append(self.en_acc.get())
-        data.append(self.en_pass.get())
-        print(data)
+        login_data=[]
+        login_data.append("Login")
+        login_data.append(self.en_acc.get())
+        login_data.append(self.en_pass.get())
+        self.queue_GUI_Socket.put(login_data)
+        self.StartMainSocket()
+        #print(login_data)
+        # print(data)
         # f=open("database.txt","r")
         # while True:
         #     infor=f.readline()
@@ -146,8 +166,33 @@ class Application(Frame):
         #             break
         # f.close()
 
+    def StartMainSocket(self):
+        # get user data from GUI
+        user_data = []
+        if self.queue_GUI_Socket.qsize() != 0:
+            user_data = self.queue_GUI_Socket.get()
 
-#if __name__=="__main__":
-t=Tk()
-app=Application(t)
-app.mainloop()
+        main_socket = socket(AF_INET, SOCK_STREAM)
+        main_socket.connect((config.HOST, config.MAIN_PORT))
+        while True:
+            send_mess = str(user_data)
+            main_socket.send(send_mess.encode('utf-8'))
+            receive_mess = main_socket.recv(config.BUFFSIZE)
+            if receive_mess.decode('utf-8') == "200_OK":
+                print("start video call")
+            else:
+                print("ERROR")
+
+
+        
+
+        
+
+        
+
+
+
+if __name__=="__main__":
+    t=Tk()
+    app=Application(t)
+    app.mainloop()
