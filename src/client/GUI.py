@@ -17,8 +17,8 @@ class Application(Frame):
         self.queue_GUI_Socket = Queue()
         self.main_socket = None
         self.is_first_access = True
-        self.login_status = False
-        
+        self.my_username = ""
+        self.my_password = ""
 
 
     def Creat_widgets(self): # interface
@@ -103,11 +103,17 @@ class Application(Frame):
         self.bt_logout.pack()
         self.bt_logout.place(x=240,y=85)
 
-        self.bt_exit = Button(self.lg, text="Exit", height=3, width=7,command=t.destroy)
-        self.bt_exit.pack()
-        self.bt_exit.place(y=85)
+        # self.bt_exit = Button(self.lg, text="Exit", height=3, width=7,command=t.destroy)
+        # self.bt_exit.pack()
+        # self.bt_exit.place(y=85)
 
-    def LogOut(self): 
+    def LogOut(self):
+        logout_data = []
+        logout_data.append("Exit")
+        logout_data.append(self.my_username)
+        logout_data.append(self.my_password)
+        self.queue_GUI_Socket.put(logout_data)
+        self.StartMainSocket()
         t.deiconify() # show main window again
         self.lg.destroy()
 
@@ -142,15 +148,26 @@ class Application(Frame):
         if self.queue_GUI_Socket.qsize() != 0:
             user_data = self.queue_GUI_Socket.get()
             print("user data", user_data)
-         
+        
+        if user_data[0] == "Register" or user_data[0] == "Login":
+            self.my_username = user_data[1]
+            self.my_password = user_data[2]
+
         send_mess = str(user_data)
+        print("After 156")
         self.main_socket.send(send_mess.encode('utf-8'))
+        print("After 158")
         receive_mess = self.main_socket.recv(config.BUFFSIZE)
-        if receive_mess.decode('utf-8') == "200_OK":
-            login_status = True
+        receive_mess =  receive_mess.decode('utf-8')
+        if receive_mess == "200_OK":
             print("Logined")
-        else:
+            self.Interface_Call() 
+        elif receive_mess == "500_NOTOK":
             print("ERR")
+        elif receive_mess == "EXITOK":
+            print("EXIT")
+            return
+        
 
 
 if __name__=="__main__":

@@ -66,7 +66,10 @@ class MainProcessing(object):
                 else:
                     server_response = "500_NOTOK"
         else:
-            server_response = "500_NOTOK"
+            if user_status != "Exit":
+                server_response = "500_NOTOK"
+            else:
+                server_response = "EXITOK"
         return server_response
 
         
@@ -104,18 +107,22 @@ class MainProcessing(object):
             while True:
                 mess = client_socket.recv(config.BUFFSIZE)
                 user_data = mess.decode('utf-8')
+                print("110", user_data)
                 user_data = eval(user_data)
                 if len(user_data) != 0:
                     server_response = self.VerifyUserAccount(user_data)
                     client_socket.send(server_response.encode('utf-8'))
+                    print("Server respone", server_response)
                     if server_response == "200_OK":
                         self.user_online.append(user_data[1])
                         print(self.user_online)
                         print("LOGIN SUCCESS !")
-                        break
-                    else:
+                        continue
+                    elif server_response == "500_NOTOK":
                         print("Login or Register ERR")
                         continue
+                    elif server_response == "EXITOK":
+                        self.user_online.remove(user_data[1])
                 else:
                     continue
         
