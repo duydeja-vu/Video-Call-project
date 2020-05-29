@@ -8,7 +8,7 @@ import numpy as np
 import zlib
 import struct
 
-HOST = '127.0.0.1'
+HOST = '201.0.200.170'
 PORT_VIDEO = 3000
 PORT_AUDIO = 4000
 
