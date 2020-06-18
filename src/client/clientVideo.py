@@ -20,65 +20,6 @@ CHANNELS=2
 RATE=44100
 client = None
 
-# def SendFrame():
-#     cap =cv2.VideoCapture(0)
-#     while True:
-#         try:
-#             _,frame = cap.read()
-#             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-#             frame = cv2.resize(frame, (640, 480))
-#             frame = np.array(frame, dtype = np.uint8).reshape(1, lnF)
-#             jpg_as_text = bytearray(frame)
-
-#             databytes = zlib.compress(jpg_as_text, 9)
-#             length = struct.pack('!I', len(databytes))
-#             bytesToBeSend = b''
-#             client.sendall(length)
-#             while len(databytes) > 0:
-#                 if (1000 * CHUNK) <= len(databytes):
-#                     bytesToBeSend = databytes[:(1000 * CHUNK)]
-#                     databytes = databytes[(1000 * CHUNK):]
-#                     client.sendall(bytesToBeSend)
-#                 else:
-#                     bytesToBeSend = databytes
-#                     client.sendall(bytesToBeSend)
-#                     databytes = b''
-#             print("##### Data Sent!! #####")
-#             cv2.waitKey(1)
-#         except:
-#             continue
-
-# def RecieveMedia():
-#     while True:
-#         try:
-#             lengthbuf = recvall(4)
-#             length, = struct.unpack('!I', lengthbuf)
-#             databytes = recvall(length)
-#             img = zlib.decompress(databytes)
-#             if len(databytes) == length:
-#                 print("Recieving Media..")
-#                 print("Image Frame Size:- {}".format(len(img)))
-#                 img = np.array(list(img))
-#                 print(img)
-#                 #img = np.array(img, dtype = np.uint8).reshape(480, 640, 3)
-#                 np.reshape(img, (480, 460, 3))
-#                 cv2.imshow("Stream", img)
-#                 cv2.waitKey(1)
-                
-#             else:
-#                 print("Data CORRUPTED")
-#         except:
-#             continue
-
-# def recvall(size):
-#     databytes = b''
-#     while len(databytes) != size:
-#         to_read = size - len(databytes)
-#         if to_read > (1000 * CHUNK):
-#             databytes += client.recv(1000 * CHUNK)
-#         else:
-#             databytes += client.recv(to_read)
-#     return databytes
 
 def SendFrame():
     cap =cv2.VideoCapture(0)
@@ -87,6 +28,7 @@ def SendFrame():
             _,frame = cap.read()
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             frame = cv2.resize(frame, (640, 480))
+            
             frame = np.array(frame, dtype = np.uint8).reshape(1, lnF)
             jpg_as_text = bytearray(frame)
 
@@ -94,6 +36,7 @@ def SendFrame():
             length = struct.pack('!I', len(databytes))
             bytesToBeSend = b''
             client.sendall(length)
+            # send 5000*chunk at one time
             while len(databytes) > 0:
                 if (5000 * CHUNK) <= len(databytes):
                     bytesToBeSend = databytes[:(5000 * CHUNK)]
@@ -103,7 +46,8 @@ def SendFrame():
                     bytesToBeSend = databytes
                     client.sendall(bytesToBeSend)
                     databytes = b''
-            print("##### Data Sent!! #####")
+            cv2.waitKey(1)
+                
         except:
             continue
 
@@ -116,13 +60,13 @@ def RecieveFrame():
             databytes = recvallVideo(length)
             img = zlib.decompress(databytes)
             if len(databytes) == length:
-                print("Recieving Media..")
-                print("Image Frame Size:- {}".format(len(img)))
+                
                 img = np.array(list(img))
-                np.reshape(img, (480, 460, 3))
+                #np.reshape(img, (480, 640, 3))
+                img = np.array(img, dtype = np.uint8).reshape(480, 640, 3)
                 cv2.imshow("Stream", img)
-                if cv2.waitKey(1) == 27:
-                    cv2.destroyAllWindows()
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
             else:
                 print("Data CORRUPTED")
         except:

@@ -47,7 +47,7 @@ class MainProcessing(object):
                 continue
 
     def ClientConnection(self, client):
-        print("------client connection")
+      
         while True:
             try:
                 lengthbuf = self.recvall(client, 4)
@@ -78,7 +78,7 @@ class MainProcessing(object):
                     i += len(databytes)
                     if BufferSize != 4:
                         self.broadcast(client, databytes)
-            print("YES!!!!!!!!!" if i == BufferSize else "NO!!!!!!!!!!!!")
+    
             if BufferSize == 4:
                 self.broadcast(client, databytes)
                 return databytes
@@ -171,7 +171,6 @@ class MainProcessing(object):
             while True:
                 mess = client_socket.recv(config.BUFFSIZE)
                 user_data = mess.decode('utf-8')
-                print("110", user_data)
                 user_data = eval(user_data)
                 if len(user_data) != 0:
                     server_response = self.VerifyUserAccount(user_data)
