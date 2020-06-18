@@ -9,9 +9,8 @@ from socket import *
 from utils import config
 from threading import Thread
 import pickle
-import serverMedia
-CHUNK = 1024
-BufferSize = 4096
+import serverVideo
+
 
 class User(object):
     def __init__(self, my_socket, my_user_name):
@@ -24,6 +23,7 @@ class MainProcessing(object):
         #self.queue_gui_socket = Queue()
         self.user_online = []
         self.count_chat_room = 0
+        
 
     def IsUserOnline(self, user_name):
         return True if self.user_online.count(user_name) != 0 else False
@@ -77,9 +77,10 @@ class MainProcessing(object):
    
 
     def HandleCallSession(self):
-        print("{} user in Chat Zoom".format(len(self.user_online)))
-        handle_call_process = Process(target=serverMedia.HandleCallSession)
-        handle_call_process.start()
+        # print("{} user in Chat Zoom".format(len(self.user_online)))
+        # handle_call_process = Process(target=serverMedia.HandleCallSession)
+        # handle_call_process.start()
+        serverVideo.StartCall()
         
     def StartSocket(self):
         # Create new socket handling verify client account
