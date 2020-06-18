@@ -93,15 +93,15 @@ def SendFrame():
             databytes = zlib.compress(jpg_as_text, 9)
             length = struct.pack('!I', len(databytes))
             bytesToBeSend = b''
-            clientVideoSocket.sendall(length)
+            client.sendall(length)
             while len(databytes) > 0:
                 if (5000 * CHUNK) <= len(databytes):
                     bytesToBeSend = databytes[:(5000 * CHUNK)]
                     databytes = databytes[(5000 * CHUNK):]
-                    clientVideoSocket.sendall(bytesToBeSend)
+                    client.sendall(bytesToBeSend)
                 else:
                     bytesToBeSend = databytes
-                    clientVideoSocket.sendall(bytesToBeSend)
+                    client.sendall(bytesToBeSend)
                     databytes = b''
             print("##### Data Sent!! #####")
         except:
