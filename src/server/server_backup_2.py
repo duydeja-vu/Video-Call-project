@@ -47,6 +47,7 @@ class MainProcessing(object):
                 continue
 
     def ClientConnection(self, client):
+        print("------client connection")
         while True:
             try:
                 lengthbuf = self.recvall(client, 4)
