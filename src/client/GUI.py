@@ -9,6 +9,7 @@ from socket import *
 import pickle
 import cv2
 import numpy as np
+import clientMedia
 
 
 class Application(Frame):
@@ -113,16 +114,17 @@ class Application(Frame):
         # self.bt_exit.place(y=85)
 
     def StartVideoCall(self):
-        cap = cv2.VideoCapture(0)
-        while True:
-            _, frame = cap.read()
-            cv2.imshow(self.my_username, frame)
+        # cap = cv2.VideoCapture(0)
+        # while True:
+        #     _, frame = cap.read()
+        #     cv2.imshow(self.my_username, frame)
             
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-        cap.release()
-        cv2.destroyAllWindows()
-        return
+        #     if cv2.waitKey(1) & 0xFF == ord('q'):
+        #         break
+        # cap.release()
+        # cv2.destroyAllWindows()
+        # return
+        clientMedia.StartVideoCall()
         
     
 

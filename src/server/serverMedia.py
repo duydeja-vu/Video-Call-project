@@ -1,4 +1,5 @@
 from socket import socket, AF_INET, SOCK_STREAM
+from socket import *
 from threading import Thread
 import struct
 
@@ -89,12 +90,16 @@ def broadcastSound(clientSocket, data_to_be_sent):
             clientAudio.sendall(data_to_be_sent)
 
 serverVideo = socket(family=AF_INET, type=SOCK_STREAM)
+serverVideo.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+
 try:
     serverVideo.bind((HOST, PORT_VIDEO))
 except OSError:
     print("Server Busy")
 
 serverAudio = socket(family=AF_INET, type=SOCK_STREAM)
+serverAudio.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+
 try:
     serverAudio.bind((HOST, PORT_AUDIO))
 except OSError:
@@ -112,3 +117,4 @@ AcceptThreadVideo = Thread(target=ConnectionsVideo)
 AcceptThreadVideo.start()
 AcceptThreadVideo.join()
 serverVideo.close()
+

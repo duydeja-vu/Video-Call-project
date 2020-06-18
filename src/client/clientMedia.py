@@ -54,8 +54,7 @@ def SendFrame():
             cv2_im = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             frame = cv2.resize(frame, (640, 480))
             frame = np.array(frame, dtype = np.uint8).reshape(1, lnF)
-            cv2.imshow("my cam", frame)
-            cv2.waitKey(1)
+        
             jpg_as_text = bytearray(frame)
             databytes = zlib.compress(jpg_as_text, 9)
             length = struct.pack('!I', len(databytes))
@@ -87,10 +86,13 @@ def RecieveFrame():
                 print("Recieving Media..")
                 print("Image Frame Size:- {}".format(len(img)))
                 img = np.array(list(img))
-                img = np.array(img, dtype = np.uint8).reshape(480, 640, 3)
+                img = np.array(img, dtype = np.uint8)
+                img = np.reshape(img, (480, 640, 3))
                 cv2.imshow("Stream", img)
-                if cv2.waitKey(1) == 27:
-                    cv2.destroyAllWindows()
+                # if cv2.waitKey(1) == 27:
+                #     cv2.destroyAllWindows()
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
             else:
                 print("Data CORRUPTED")
         except:
@@ -108,21 +110,21 @@ def recvallVideo(size):
     return databytes
 
 
+def StartVideoCall():
+    clientVideoSocket = socket(family=AF_INET, type=SOCK_STREAM)
+    clientVideoSocket.connect((HOST, PORT_VIDEO))
+    wvs = WebcamVideoStream(0).start()
 
-clientVideoSocket = socket(family=AF_INET, type=SOCK_STREAM)
-clientVideoSocket.connect((HOST, PORT_VIDEO))
-wvs = WebcamVideoStream(0).start()
+    clientAudioSocket = socket(family=AF_INET, type=SOCK_STREAM)
+    clientAudioSocket.connect((HOST, PORT_AUDIO))
 
-clientAudioSocket = socket(family=AF_INET, type=SOCK_STREAM)
-clientAudioSocket.connect((HOST, PORT_AUDIO))
+    # audio=pyaudio.PyAudio()
+    # stream=audio.open(format=FORMAT,channels=CHANNELS, rate=RATE, input=True, output = True,frames_per_buffer=CHUNK)
 
-# audio=pyaudio.PyAudio()
-# stream=audio.open(format=FORMAT,channels=CHANNELS, rate=RATE, input=True, output = True,frames_per_buffer=CHUNK)
+    initiation = clientVideoSocket.recv(5).decode()
 
-initiation = clientVideoSocket.recv(5).decode()
-
-if initiation == "start":
-    SendFrameThread = Thread(target=SendFrame).start()
-    # SendAudioThread = Thread(target=SendAudio).start()
-    RecieveFrameThread = Thread(target=RecieveFrame).start()
-    # RecieveAudioThread = Thread(target=RecieveAudio).start()
+    if initiation == "start":
+        Thread(target=SendFrame).start()
+        # SendAudioThread = Thread(target=SendAudio).start()
+        Thread(target=RecieveFrame).start()
+        # RecieveAudioThread = Thread(target=RecieveAudio).start()
