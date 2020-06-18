@@ -9,7 +9,7 @@ from socket import *
 from utils import config
 from threading import Thread
 import pickle
-
+import serverMedia
 CHUNK = 1024
 BufferSize = 4096
 
@@ -74,95 +74,31 @@ class MainProcessing(object):
                 server_response = "EXITOK"
         return server_response
 
-    # def ConnectionsVideo(self):
-    #     while True:
-    #         try:
-    #             clientVideo, addr = self.server_video.accept()
-    #             print("{} is connected!!".format(addr))
-    #             self.addresses[clientVideo] = addr
-    #             if len(self.addresses) > 1:
-    #                 for sockets in self.addresses:
-    #                     if sockets not in self.threads:
-    #                         self.threads[sockets] = True
-    #                         sockets.send(("start").encode())
-    #                         Thread(target=ClientConnectionVideo, args=(sockets, )).start()
-    #             else:
-    #                 continue
-    #         except:
-    #             continue
+   
 
-    # def ClientConnectionVideo(self, clientVideo):
-    #     while True:
-    #         try:
-    #             lengthbuf = recvall(clientVideo, 4)
-    #             length, = struct.unpack('!I', lengthbuf)
-    #             recvall(clientVideo, length)
-    #         except:
-    #             continue
-    
-
-    # def recvall(self, clientVideo, BufferSize):
-    #     databytes = b''
-    #     i = 0
-    #     while i != BufferSize:
-    #         to_read = BufferSize - i
-    #         if to_read > (1000 * CHUNK):
-    #             databytes = clientVideo.recv(1000 * CHUNK)
-    #             i += len(databytes)
-    #             broadcastVideo(clientVideo, databytes)
-    #         else:
-    #             if BufferSize == 4:
-    #                 databytes += clientVideo.recv(to_read)
-    #             else:
-    #                 databytes = clientVideo.recv(to_read)
-    #             i += len(databytes)
-    #             if BufferSize != 4:
-    #                 broadcastVideo(clientVideo, databytes)
-    #     print("YES!!!!!!!!!" if i == BufferSize else "NO!!!!!!!!!!!!")
-    #     if BufferSize == 4:
-    #         broadcastVideo(clientVideo, databytes)
-    #         return databytes
-
-    #     def broadcastVideo(self, clientSocket, data_to_be_sent):
-    #         for clientVideo in self.addresses:
-    #             if clientVideo != clientSocket:
-    #                 clientVideo.sendall(data_to_be_sent)
-
-
-    # def HandleCallSession(self):
-    #     AcceptThreadVideo = Thread(target=self.ConnectionsVideo)
-    #     AcceptThreadVideo.start()
+    def HandleCallSession(self):
+        print("{} user in Chat Zoom".format(len(self.user_online)))
+        handle_call_process = Process(target=serverMedia.HandleCallSession)
+        handle_call_process.start()
         
     def StartSocket(self):
         # Create new socket handling verify client account
         self.main_socket = socket(family=AF_INET, type=SOCK_STREAM)
         self.main_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        print(self.main_socket)
         try:
             
             self.main_socket.bind((config.HOST, config.MAIN_PORT))
         except OSError:
-            print("Can't bind video port")
+            print("Can't bind main socket")
+            exit(0)
 
-        # Create new socket handling client video
-        self.server_video = socket(family=AF_INET, type=SOCK_STREAM)
-        self.server_video.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        try:
-            self.server_video.bind((config.HOST, config.VIDEO_PORT))
-        except OSError:
-            print("Can't bind video port")
-
-        # Create new socket handling client audio
-        self.server_audio = socket(family=AF_INET, type=SOCK_STREAM)
-        self.server_audio.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        try:
-            self.server_audio.bind((config.HOST, config.AUDIO_PORT))
-        except OSError:
-            print("Can't bind audio port")
+        serverVideo = socket(family=AF_INET, type=SOCK_STREAM)
+        serverVideo.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        print(serverVideo)
 
         self.main_socket.listen(10)
-        self.server_video.listen(2)
         print("Main Socket Waiting for connection..")
-        print("Server video Waiting for connection..")
         while True: 
             client_socket, client_addr = self.main_socket.accept()
             while True:
@@ -179,7 +115,7 @@ class MainProcessing(object):
                         print(self.user_online)
                         print("LOGIN SUCCESS !")
                         self.HandleCallSession()
-                        continue
+                        break
                     elif server_response == "500_NOTOK":
                         print("Login or Register ERR")
                         continue

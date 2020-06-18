@@ -1,14 +1,13 @@
+import sys
+sys.path.append("..")
+
 from socket import socket, AF_INET, SOCK_STREAM
 from socket import *
 from threading import Thread
 import struct
+from utils import config
 
-HOST = '201.0.200.170'
-PORT_VIDEO = 3000
-PORT_AUDIO = 4000
-lnF = 640*480*3
-CHUNK = 1024
-BufferSize = 4096
+
 addressesAudio = {}
 addresses = {}
 threads = {}
@@ -62,8 +61,8 @@ def recvall(clientVideo, BufferSize):
         i = 0
         while i != BufferSize:
             to_read = BufferSize - i
-            if to_read > (1000 * CHUNK):
-                databytes = clientVideo.recv(1000 * CHUNK)
+            if to_read > (1000 * config.CHUNK):
+                databytes = clientVideo.recv(1000 * config.CHUNK)
                 i += len(databytes)
                 broadcastVideo(clientVideo, databytes)
             else:
@@ -89,32 +88,43 @@ def broadcastSound(clientSocket, data_to_be_sent):
         if clientAudio != clientSocket:
             clientAudio.sendall(data_to_be_sent)
 
-serverVideo = socket(family=AF_INET, type=SOCK_STREAM)
-serverVideo.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+serverVideo = None
+serverAudio = None
 
-try:
-    serverVideo.bind((HOST, PORT_VIDEO))
-except OSError:
-    print("Server Busy")
+def HandleCallSession():
+    global serverAudio, serverVideo
+    serverVideo = socket(family=AF_INET, type=SOCK_STREAM)
+    print(serverVideo)
+    serverVideo.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 
-serverAudio = socket(family=AF_INET, type=SOCK_STREAM)
-serverAudio.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-
-try:
-    serverAudio.bind((HOST, PORT_AUDIO))
-except OSError:
-    print("Server Busy")
-
-serverAudio.listen(2)
-print("Waiting for connection..")
-AcceptThreadAudio = Thread(target=ConnectionsSound)
-AcceptThreadAudio.start()
+    try:
+        serverVideo.bind((config.HOST, config.VIDEO_PORT))
+    except OSError:
+        print("Server Busy")
+        exit(0)
+    serverVideo.listen(10)
 
 
-serverVideo.listen(2)
-print("Waiting for connection..")
-AcceptThreadVideo = Thread(target=ConnectionsVideo)
-AcceptThreadVideo.start()
-AcceptThreadVideo.join()
-serverVideo.close()
+    serverAudio = socket(family=AF_INET, type=SOCK_STREAM)
+    serverAudio.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 
+    try:
+        serverAudio.bind((config.HOST, config.AUDIO_PORT))
+    except OSError:
+        print("Server Busy")
+        exit(0)
+
+    serverAudio.listen(10)
+    print("Waiting for connection..")
+    AcceptThreadAudio = Thread(target=ConnectionsSound)
+    AcceptThreadAudio.start()
+
+
+    serverVideo.listen(2)
+    print("Waiting for connection..")
+    AcceptThreadVideo = Thread(target=ConnectionsVideo)
+    AcceptThreadVideo.start()
+    AcceptThreadVideo.join()
+    serverVideo.close()
+
+#HandleCallSession()
