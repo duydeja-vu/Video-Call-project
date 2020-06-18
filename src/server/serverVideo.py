@@ -2,6 +2,7 @@ import sys
 sys.path.append("..")
 
 from socket import socket, AF_INET, SOCK_STREAM
+from socket import *
 from threading import Thread
 import struct
 from utils import config 
@@ -13,7 +14,9 @@ CHUNK = 1024
 addresses = {}
 threads = {}
 server = None
-def Connections():
+def Connections(server_socket):
+    global server
+    server = server_socket
     while True:
         try:
             client, addr = server.accept()
@@ -67,14 +70,14 @@ def recvall(client, BufferSize):
             return databytes
 
 def StartCall():
-    global server
     server = socket(family=AF_INET, type=SOCK_STREAM)
+    server.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
     try:
         server.bind((HOST, PORT))
     except OSError:
         print("Server Busy")
 
-    server.listen(2)
+    server.listen(10)
     print("Waiting for connection..")
     AcceptThread = Thread(target=Connections)
     AcceptThread.start()

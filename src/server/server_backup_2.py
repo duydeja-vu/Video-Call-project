@@ -9,24 +9,78 @@ from socket import *
 from utils import config
 from threading import Thread
 import pickle
-import serverVideo
 
 
-class User(object):
-    def __init__(self, my_socket, my_user_name):
-        self.addresses = {}
-        self.threads = {}
-
+HOST = config.HOST 
+PORT = config.VIDEO_PORT
+lnF = 640*480*3
+CHUNK = 1024
+addresses = {}
+threads = {}
+server = None
 
 class MainProcessing(object):
     def __init__(self):
         #self.queue_gui_socket = Queue()
+        self.addresses = {}
+        self.threads = {}
         self.user_online = []
         self.count_chat_room = 0
         self.main_socket = None
         self.video_socket = None
 
-        
+    def Connections(self):
+        while True:
+            try:
+                client, addr = self.video_socket.accept()
+                print("{} is connected!!".format(addr))
+                addresses[client] = addr
+                if len(addresses) > 1:
+                    for sockets in addresses:
+                        if sockets not in threads:
+                            threads[sockets] = True
+                            sockets.send(("start").encode())
+                            Thread(target=self.ClientConnection, args=(sockets, )).start()
+                else:
+                    continue
+            except:
+                continue
+
+    def ClientConnection(self, client):
+        while True:
+            try:
+                lengthbuf = self.recvall(client, 4)
+                length, = struct.unpack('!I', lengthbuf)
+                self.recvall(client, length)
+            except:
+                continue
+
+    def broadcast(self, clientSocket, data_to_be_sent):
+        for client in addresses:
+            if client != clientSocket:
+                client.sendall(data_to_be_sent)
+
+    def recvall(self, client, BufferSize):
+            databytes = b''
+            i = 0
+            while i != BufferSize:
+                to_read = BufferSize - i
+                if to_read > (1000 * CHUNK):
+                    databytes = client.recv(1000 * CHUNK)
+                    i += len(databytes)
+                    self.broadcast(client, databytes)
+                else:
+                    if BufferSize == 4:
+                        databytes += client.recv(to_read)
+                    else:
+                        databytes = client.recv(to_read)
+                    i += len(databytes)
+                    if BufferSize != 4:
+                        self.broadcast(client, databytes)
+            print("YES!!!!!!!!!" if i == BufferSize else "NO!!!!!!!!!!!!")
+            if BufferSize == 4:
+                self.broadcast(client, databytes)
+                return databytes
 
     def IsUserOnline(self, user_name):
         return True if self.user_online.count(user_name) != 0 else False
@@ -76,25 +130,31 @@ class MainProcessing(object):
             else:
                 server_response = "EXITOK"
         return server_response
+    
+        
+       
 
-   
-
-    def HandleCallSession(self):
-        # print("{} user in Chat Zoom".format(len(self.user_online)))
-        # handle_call_process = Process(target=serverMedia.HandleCallSession)
-        # handle_call_process.start()
-        AcceptThread = Thread(target=serverVideo.Connections, args=())
+    def StartVideoSocket(self):
+        self.video_socket = socket(family=AF_INET, type=SOCK_STREAM)
+        self.video_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        try:
+            
+            self.video_socket.bind((config.HOST, config.VIDEO_PORT))
+        except OSError:
+            print("Can't bind video socket")
+            exit(0)
+        self.video_socket.listen(10)
+        print("Video Socket Waiting for connection..")
+        AcceptThread = Thread(target=self.Connections)
         AcceptThread.start()
         AcceptThread.join()
-        server.close()
+        self.video_socket.close()
         
-        
-        
-    def StartSocket(self):
-        # Create new socket handling verify client account
+
+
+    def StartMainSocket(self):
         self.main_socket = socket(family=AF_INET, type=SOCK_STREAM)
         self.main_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        print(self.main_socket)
         try:
             
             self.main_socket.bind((config.HOST, config.MAIN_PORT))
@@ -102,22 +162,8 @@ class MainProcessing(object):
             print("Can't bind main socket")
             exit(0)
 
-        self.video_socket = socket(family=AF_INET, type=SOCK_STREAM)
-        self.video_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        try:
-            self.video_socket.bind((config.HOST, config.VIDEO_PORT))
-        except OSError:
-            print("Server Busy")
-
-        
-
-        # serverVideo = socket(family=AF_INET, type=SOCK_STREAM)
-        # serverVideo.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        # print(serverVideo)
-
         self.main_socket.listen(10)
-        self.video_socket.listen(10)
-        
+
         print("Main Socket Waiting for connection..")
         while True: 
             client_socket, client_addr = self.main_socket.accept()
@@ -134,8 +180,6 @@ class MainProcessing(object):
                         self.user_online.append(user_data[1])
                         print(self.user_online)
                         print("LOGIN SUCCESS !")
-                        handle_client = Process(target=self.HandleCallSession)
-                        handle_client.start()
                         break
                     elif server_response == "500_NOTOK":
                         print("Login or Register ERR")
@@ -146,19 +190,15 @@ class MainProcessing(object):
                         continue
                 else:
                     continue
-        
 
 
 
 main_processing = MainProcessing()
 
 def main():
+    process_main_socket = Process(target=main_processing.StartMainSocket)
+    process_video_socket = Process(target=main_processing.StartVideoSocket)
+    process_main_socket.start()
+    process_video_socket.start()
 
-    process_socket = Process(target=main_processing.StartSocket)
-
-    process_socket = process_socket.start()
-
-    
-
-if __name__ == "__main__":
-    main()
+main()
