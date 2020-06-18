@@ -1,5 +1,5 @@
 
-HOST = '127.0.0.1'
+HOST = '192.168.1.114'
 
 MAIN_PORT =  15555
 
@@ -15,6 +15,12 @@ CHANNELS = 2
 RATE = 44100
 CHUNK = 1024
 BufferSize = 4096
+
+
+lnF = 640*480*3
+
+
+
 
 
 

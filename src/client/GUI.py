@@ -215,7 +215,7 @@ class Application(Frame):
         # return
         # video_call_process = Process(target=clientMedia.StartVideoCall())
         # video_call_process.start()
-        StartVideoCall()
+        clientMedia.StartVideoCall()
     
 
 
