@@ -15,7 +15,7 @@ PORT = config.VIDEO_PORT
 
 BufferSize = 4096
 CHUNK=1024
-lnF = 640*480*3
+lnF = 640*480*1
 CHANNELS=2
 RATE=44100
 client = None
@@ -26,8 +26,9 @@ def SendFrame():
     while True:
         try:
             _,frame = cap.read()
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+            # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            # frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             frame = cv2.resize(frame, (640, 480))
             
             frame = np.array(frame, dtype = np.uint8).reshape(1, lnF)
@@ -64,7 +65,8 @@ def RecieveFrame():
                 
                 img = np.array(list(img))
                 #np.reshape(img, (480, 640, 3))
-                img = np.array(img, dtype = np.uint8).reshape(480, 640, 2)
+                # img = np.array(img, dtype = np.uint8).reshape(480, 640, 3)
+                img = np.array(img, dtype = np.uint8).reshape(480, 640, 1)
                 cv2.imshow("Stream", img)
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break

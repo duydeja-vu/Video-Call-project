@@ -52,8 +52,8 @@ def recvall(client, BufferSize):
         i = 0
         while i != BufferSize:
             to_read = BufferSize - i
-            if to_read > (1000 * CHUNK):
-                databytes = client.recv(1000 * CHUNK)
+            if to_read > (5000 * CHUNK):
+                databytes = client.recv(5000 * CHUNK)
                 i += len(databytes)
                 broadcast(client, databytes)
             else:
@@ -70,14 +70,7 @@ def recvall(client, BufferSize):
             return databytes
 
 def StartCall():
-    server = socket(family=AF_INET, type=SOCK_STREAM)
-    server.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-    try:
-        server.bind((HOST, PORT))
-    except OSError:
-        print("Server Busy")
-
-    server.listen(10)
+    
     print("Waiting for connection..")
     AcceptThread = Thread(target=Connections)
     AcceptThread.start()

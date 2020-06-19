@@ -180,9 +180,9 @@ class Application(Frame):
             self.my_password = user_data[2]
 
         send_mess = str(user_data)
-        print("After 156")
         self.main_socket.send(send_mess.encode('utf-8'))
-        print("After 158")
+        if user_data[0] == "Exit":
+            exit(0)
         receive_mess = self.main_socket.recv(config.BUFFSIZE)
         receive_mess =  receive_mess.decode('utf-8')
         if receive_mess == "200_OK":

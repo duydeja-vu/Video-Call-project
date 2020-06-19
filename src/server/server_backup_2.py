@@ -66,8 +66,8 @@ class MainProcessing(object):
             i = 0
             while i != BufferSize:
                 to_read = BufferSize - i
-                if to_read > (1000 * CHUNK):
-                    databytes = client.recv(1000 * CHUNK)
+                if to_read > (5000 * CHUNK):
+                    databytes = client.recv(5000 * CHUNK)
                     i += len(databytes)
                     self.broadcast(client, databytes)
                 else:
