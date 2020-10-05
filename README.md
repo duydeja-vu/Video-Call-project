@@ -1,5 +1,5 @@
 # Video-Call-project
-This repository is a project of Group 4. 
+This repository is a appication that allow two client to call video toghether through LAN.
 
 ## Dependencies:
 > pip3 install opencv-python
